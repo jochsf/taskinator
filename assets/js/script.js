@@ -280,9 +280,59 @@ var dragLeaveHandler = function (event) {
     }
 }
 
-var saveTasks = function() {
+var saveTasks = function () {
     localStorage.setItem("tasks", JSON.stringify(tasks));
-  }
+}
+
+var loadTasks = function () {
+    var tasks = localStorage.getItem("tasks");
+
+    if (tasks === null) {
+        tasks = [];
+
+        return false;
+    }
+    tasks = JSON.parse(tasks);
+
+    for (i = 0; i < tasks.length; i++) {
+         tasks[i].id = taskIdCounter;
+
+        var listItemEl = document.createElement("li");   // create the "li" item/selector. 
+        listItemEl.className = "task-item";                // assign the proper class to this new item. 
+
+        // Add a 'task-id' value as a custom attribute, so we know which task is which. 
+        listItemEl.setAttribute("data-task-id", tasks[i].id);
+        listItemEl.setAttribute("draggable", "true");      // also set this element to be draggable
+
+        // Create a 'div' to hold the task info and add it to the list item just created. 
+        var taskInfoEl = document.createElement("div");
+        taskInfoEl.className = "task-info";                // give the 'div' a class name
+
+        // Add content and style to this new 'div' element 
+        taskInfoEl.innerHTML = "<h3 class='task-name'>" + tasks[i].name + "</h3><span class='task-type'>" + tasks[i].type + "</span>";
+
+        // Put things all together using .appendChild 
+        listItemEl.appendChild(taskInfoEl);                    // this adds the 'h3' and 'span' data 
+        var taskActionsEl = createTaskActions(tasks[i].id);    // create the action buttons
+        listItemEl.appendChild(taskActionsEl);                 // add the buttons to the 'li'
+
+        // Now we need to put the tasks into the appropriate status columns
+        if (tasks[i].status === "to do") {
+            listItemEl.querySelector("select[name='status-change']").selectedIndex = 0;
+            tasksToDoEl.appendChild(listItemEl);
+        }
+        else if (tasks[i].status === "in progress") {
+            listItemEl.querySelector("select[name='status-change']").selectedIndex = 1;
+            tasksInProgressEl.appendChild(listItemEl);
+        }
+        else if (tasks[i].status === "completed") {
+            listItemEl.querySelector("select[name='status-change']").selectedIndex = 2;
+            tasksCompletedEl.appendChild(listItemEl);
+        }
+        // Increment the 'task-id' value.
+        taskIdCounter++;
+    }
+}
 
 formEl.addEventListener("submit", taskFormHandler);
 pageContentEl.addEventListener("click", taskButtonHandler);
@@ -291,6 +341,8 @@ pageContentEl.addEventListener("dragstart", dragTaskHandler);
 pageContentEl.addEventListener("dragover", dropZoneDragHandler);
 pageContentEl.addEventListener("drop", dropTaskHandler);
 pageContentEl.addEventListener("dragleave", dragLeaveHandler);
+
+loadTasks();
 
 
 
